@@ -1,0 +1,8 @@
+Date de la simulation : 11/27/2020, 09:44:07 
+CHECK node 2 (sf:8 bw:250 freq:8.600000e+08) others: 1>> node 1 (sf:8 bw:250 freq:8.600000e+08)
+ frequency coll 250
+collision sf node 2 and node 1
+ collision timing node 2 (0.0,3.072,5145.856) node 1 (-1592.59680635,993.259193646)
+ not late enough
+pwr: node 2 -110.10 dBm node 1 -118.15 dBm; diff 8.05 dBm
+ p1 wins, p2 lost

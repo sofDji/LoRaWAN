@@ -1,0 +1,10 @@
+Date de la simulation : 01/09/2021, 12:08:00 
+CHECK node 4 (sf:7 bw:500 freq:8.600000e+08) others: 3>> node 3 (sf:11 bw:500 freq:8.600000e+08)
+ frequency coll 500
+ no sf collision
+>> node 1 (sf:11 bw:500 freq:8.600000e+08)
+ frequency coll 500
+ no sf collision
+>> node 0 (sf:11 bw:250 freq:8.600000e+08)
+ frequency coll 500
+ no sf collision
