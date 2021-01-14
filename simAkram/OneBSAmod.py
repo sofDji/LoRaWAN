@@ -48,7 +48,7 @@
     data file can be easily plotted using e.g. gnuplot.
 """
 """
-Mise en commentaire de nombreux affichage"##" pour ne garder que les résultats 
+Mise en commentaire de nombreux affichage"##" pour ne garder que les résultats
 Enlever le commentaire empechant de lancer directement avec les arguments
 Set le simulateur pour ne ce lancer que en akramsim
 """
@@ -65,6 +65,20 @@ import operator
 import scipy
 import scipy.stats
 from matplotlib.patches import Rectangle
+import sqlite3
+
+
+
+
+try:
+    sqliteConnection = sqlite3.connect('Nodesweight.db')
+    cursor = sqliteConnection.cursor()
+
+except sqlite3.Error as error:
+
+    print("Error when connecting to sqlite3",error)
+
+
 
 # turn on/off graphics
 graphics = 0
@@ -385,6 +399,28 @@ class myNode():
 
         self.packet = myPacket(self.nodeid, packetlen, self.dist)
         self.sent = 0
+
+        dir = ""
+        if (self.y > bsy ):
+            dir += "N"
+        else:
+            dir += "S"
+        if (self.x > bsx):
+            dir += "E"
+        else:
+            dir += "W"
+
+        distance = math.sqrt(abs(self.x-bsx)**2 + abs(self.y-bsy)**2)
+
+        cursor.execute("Select ABS(distance - ?) AS closest, weight FROM Nodes WHERE direction = ? ORDER BY closest LIMIT 1",(distance,dir))
+        result = cursor.fetchall()
+        if (len(result) != 0):
+            for row in result:
+                self.SFs = [int(str) for str in row[1].split(',')]
+
+
+
+
 
         # graphics for node
         global graphics
@@ -811,6 +847,27 @@ else:
 with open(fname, "a") as myfile:
     myfile.write(res)
 myfile.close()
+
+
+for n in nodes:
+    dir = ""
+    if (n.y > bsy ):
+        dir += "N"
+    else:
+        dir += "S"
+    if (n.x > bsx):
+        dir += "E"
+    else:
+        dir += "W"
+    string_arr_of_sfs = [str(int) for int in n.SFs]
+    str_of_sfs = ",".join(string_arr_of_sfs)
+    distance = math.sqrt(abs(n.x-bsx)**2 + abs(n.y-bsy)**2 )
+    cursor.execute("Insert INTO Nodes Values (?,?,?)",(distance,dir,str_of_sfs))
+    sqliteConnection.commit()
+
+if (sqliteConnection):
+    sqliteConnection.close()
+
 
 # with open('nodes.txt','w') as nfile:
 #     for n in nodes:
