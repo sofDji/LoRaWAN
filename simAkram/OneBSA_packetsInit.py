@@ -396,8 +396,6 @@ class myNode():
         self.dist = np.sqrt((self.x-bsx)*(self.x-bsx)+(self.y-bsy)*(self.y-bsy))
         ##print('node %d' %nodeid, "x", self.x, "y", self.y, "dist: ", self.dist)
 
-        self.packet = myPacket(self.nodeid, packetlen, self.dist)
-        self.sent = 0
 
         dir = ""
         if (self.y > bsy ):
@@ -411,15 +409,20 @@ class myNode():
 
         distance = math.sqrt(abs(self.x-bsx)**2 + abs(self.y-bsy)**2)
 
+
+
+        
+
         cursor.execute("Select ABS(distance - ?) AS closest, weight FROM Nodes WHERE direction = ? ORDER BY closest LIMIT 1",(distance,dir))
         result = cursor.fetchall()
         if (len(result) != 0):
             for row in result:
                 self.SFs = [int(line) for line in row[1].split(',')]
-                
 
 
 
+        self.packet = myPacket(self.nodeid, packetlen, self.dist, self.SFs)
+        self.sent = 0
 
 
         # graphics for node
@@ -434,7 +437,7 @@ class myNode():
 # it also sets all parameters, currently random
 #
 class myPacket():
-    def __init__(self, nodeid, plen, distance):
+    def __init__(self, nodeid, plen, distance, tableauSFs):
         global experiment
         global Ptx
         global gamma
@@ -448,8 +451,32 @@ class myPacket():
         self.nodeid = nodeid
         self.txpow = Ptx
 
-        # randomize configuration values
-        self.sf = random.randint(6,12)
+
+
+        """
+        #version 1 utilisation du tableau au premier coup 
+        maxT = 0
+        sizeT = len(tableauSFs)
+        for i in range(1,sizeT):
+            if tableauSFs[maxT] <= tableauSFs[i]:
+                maxT = i
+        self.sf = maxT + 7
+        print(tableauSFs)
+        print("the packet took the SF number : ")
+        print(self.sf)
+        """       
+        #version 2 avec algorithme
+        #****************************************************************************************
+        #INITIALISATION DU SF au PREMIER coup du paquet
+        if(distance >= 0 and distance <= 50):
+            self.sf = random.choice([7, 8])
+        elif(distance > 50 and distance <= 100):
+            self.sf = random.choice([9, 10])
+        else:
+            self.sf = random.choice([11, 12])
+
+
+        #self.sf = random.randint(6,12)
         self.cr = random.randint(1,4)
         self.bw = random.choice([125, 250, 500])
 
@@ -608,12 +635,21 @@ def transmit(env,node):
 
             # 3ème version (modifié par Cédric pour reset les poids )
             if (versionChoice == 3):
-                if lastsf == node.packet.sf:            # si deux collision d'affilé sur le même SF 
-                    node.SFs[lastsf - 7] = min(node.SFs) # alors récupération et set au minimum
+                taille = len(node.SFs)
+                min = 0
+                if lastsf == node.packet.sf:            # si deux collision d'affilé sur le même SF
+                    for i in range (1,taille):	    # alors récupération et set au minimum
+                        if node.SFs[i] <= node.SFs[min]:
+                            min = i
+                    node.SFs[lastsf - 7] = node.SFs[min]
                 lastsf = node.packet.sf
-                node.packet.sf = node.SFs.index(max(node.SFs)) + 7 # Modifié le 10/12/2020 par Cédric
-            print "J'ai changé le SF du noeud n° ",node.nodeid
-            print "Nouvelle SF ", node.packet.sf
+                max = 0
+                for i in range(1,taille):
+                    if node.SFs[max] <= node.SFs[i]:
+                        max = i
+                node.packet.sf = max + 7 # Modifié le 10/12/2020 par Cédric
+            ##print "J'ai changé le SF du noeud n° ",node.nodeid
+            ##print "Nouvelle SF ", node.packet.sf
 
 
 
@@ -683,14 +719,14 @@ else:
             full_collision = bool(int(sys.argv[7]))
     else:
         print "************* AkramSim **************"
-        versionChoice = input("Vous voulez utiliser qu'elle version du simulateur :   ")
-        nrNodes = input("Saisissez le nombre de neouds :   ")
-        avgSendTime = input("Average send time :   ")
-        simtime = input("Simulation time :   ")
-        dataSize = input("Datasize Max:   ")
-        SF = input("Facteur d'étalement :   ")
-        BW = input("Bande passante  :   ")
-        full_collision = input("full collision :   ")
+        versionChoice = 3
+        nrNodes = 100
+        avgSendTime = 500
+        simtime = 10000
+        dataSize = 2500
+        SF = 7
+        BW = 125
+        full_collision = 1
         print "Nodes:", nrNodes
         print "AvgSendTime (exp. distributed):",avgSendTime
         print "Simtime: ", simtime

@@ -75,6 +75,18 @@ except sqlite3.Error as error:
 
     print("Error when connecting to sqlite3",error)
 
+def sql_pow(x,y):
+    return x**y
+
+sqliteConnection.create_function("pow",2,sql_pow)
+
+def sql_sqrt(x):
+    return np.sqrt(x)
+
+sqliteConnection.create_function("sqrt",1,sql_sqrt)
+
+
+
 
 
 # turn on/off graphics
@@ -399,24 +411,12 @@ class myNode():
         self.packet = myPacket(self.nodeid, packetlen, self.dist)
         self.sent = 0
 
-        dir = ""
-        if (self.y > bsy ):
-            dir += "N"
-        else:
-            dir += "S"
-        if (self.x > bsx):
-            dir += "E"
-        else:
-            dir += "W"
 
-        distance = math.sqrt(abs(self.x-bsx)**2 + abs(self.y-bsy)**2)
-
-        cursor.execute("Select ABS(distance - ?) AS closest, weight FROM Nodes WHERE direction = ? ORDER BY closest LIMIT 1",(distance,dir))
+        cursor.execute("Select sqrt(pow(x-?,2)+pow(y-?,2)) AS closest, weight FROM NodesPos ORDER BY closest LIMIT 1",(self.x,self.y))
         result = cursor.fetchall()
         if (len(result) != 0):
             for row in result:
                 self.SFs = [int(line) for line in row[1].split(',')]
-                
 
 
 
@@ -608,12 +608,21 @@ def transmit(env,node):
 
             # 3ème version (modifié par Cédric pour reset les poids )
             if (versionChoice == 3):
-                if lastsf == node.packet.sf:            # si deux collision d'affilé sur le même SF 
-                    node.SFs[lastsf - 7] = min(node.SFs) # alors récupération et set au minimum
+                taille = len(node.SFs)
+                min = 0
+                if lastsf == node.packet.sf:            # si deux collision d'affilé sur le même SF
+                    for i in range (1,taille):	    # alors récupération et set au minimum
+                        if node.SFs[i] <= node.SFs[min]:
+                            min = i
+                    node.SFs[lastsf - 7] = node.SFs[min]
                 lastsf = node.packet.sf
-                node.packet.sf = node.SFs.index(max(node.SFs)) + 7 # Modifié le 10/12/2020 par Cédric
-            print "J'ai changé le SF du noeud n° ",node.nodeid
-            print "Nouvelle SF ", node.packet.sf
+                max = 0
+                for i in range(1,taille):
+                    if node.SFs[max] <= node.SFs[i]:
+                        max = i
+                node.packet.sf = max + 7 # Modifié le 10/12/2020 par Cédric
+            ##print "J'ai changé le SF du noeud n° ",node.nodeid
+            ##print "Nouvelle SF ", node.packet.sf
 
 
 
@@ -840,19 +849,9 @@ myfile.close()
 
 
 for n in nodes:
-    dir = ""
-    if (n.y > bsy ):
-        dir += "N"
-    else:
-        dir += "S"
-    if (n.x > bsx):
-        dir += "E"
-    else:
-        dir += "W"
     string_arr_of_sfs = [str(int) for int in n.SFs]
     str_of_sfs = ",".join(string_arr_of_sfs)
-    distance = math.sqrt(abs(n.x-bsx)**2 + abs(n.y-bsy)**2 )
-    cursor.execute("Insert INTO Nodes Values (?,?,?)",(distance,dir,str_of_sfs))
+    cursor.execute("Insert INTO NodesPos Values (?,?,?)",(n.x,n.y,str_of_sfs))
     sqliteConnection.commit()
 
 if (sqliteConnection):
