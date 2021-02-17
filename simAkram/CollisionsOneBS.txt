@@ -1,5 +1,29 @@
-Date de la simulation : 02/17/2021, 16:31:17 
-CHECK node 0 (sf:9 bw:250 freq:8.600000e+08) others: 1
+Date de la simulation : 02/17/2021, 23:22:49 
+CHECK node 8 (sf:11 bw:250 freq:8.600000e+08) others: 6
+ frequency coll 250
+
+ no sf collision
+
+ frequency coll 250
+collision sf node 8 and node 4
+ collision timing node 8 (0.0,24.576,1805.952) node 4 (-9738.78296179,9924.06503821)
+ not late enough
+pwr: node 8 -116.04 dBm node 4 -123.72 dBm; diff 7.68 dBm
+ p1 wins, p2 lost
+
+ frequency coll 250
+
+ no sf collision
+
+ frequency coll 250
+collision sf node 8 and node 3
+ collision timing node 8 (0.0,24.576,1805.952) node 3 (-440.441258669,1126.40674133)
+ not late enough
+pwr: node 8 -116.04 dBm node 3 -113.61 dBm; diff -2.43 dBm
+ collision pwr both node 8 and node 3
+ frequency coll 500
+ no sf collision
+
  frequency coll 250
 
  no sf collision

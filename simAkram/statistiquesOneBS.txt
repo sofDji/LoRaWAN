@@ -1,10 +1,10 @@
-Date de la simulation : 02/17/2021, 16:31:17 
-energy (in mJ): 3520.687104 
-sent packets: 2 
-collisions: 0 
-received packets: 1 
-processed packets: 1 
-lost packets: 0 
-NoACK packets: 0 
-DER : 1.0 
-DER method 2 : 0.5 
+Date de la simulation : 02/17/2021, 23:22:49 
+energy (in mJ): 8842.156416 
+sent packets: 48 
+collisions: 28 
+received packets: 2 
+processed packets: 30 
+lost packets: 9 
+NoACK packets: 37 
+DER : 0.416666666667 
+DER method 2 : 0.0416666666667 

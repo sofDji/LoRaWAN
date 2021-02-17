@@ -418,10 +418,6 @@ class myNode():
                 self.SFs = [int(line) for line in row[1].split(',')]
                 
 
-
-
-
-
         # graphics for node
         global graphics
         f.write(str(self.SFs)+'\n')
@@ -558,13 +554,17 @@ def transmit(env,node):
         if node.packet.lost:
             global nrLost
             nrLost += 1
+            print (node.packet.sf)
             node.SFs[node.packet.sf-7] = node.SFs[node.packet.sf-7] - 1
+            
+
         if node.packet.collided == 1:
             node.coll = node.coll + 1
             node.lstretans += 1
             global nrCollisions
             nrCollisions = nrCollisions +1
             node.SFs[node.packet.sf-7] = node.SFs[node.packet.sf-7] - 1
+            
         if node.packet.acked == 0:
             #node.buffer += PcktLength_SF[node.parameters.sf-7]
             #print "node {0.nodeid} buffer {0.buffer} bytes".format(node)
@@ -584,7 +584,6 @@ def transmit(env,node):
             global nrReceived
             nrReceived = nrReceived + 1
             node.SFs[node.packet.sf-7] = node.SFs[node.packet.sf-7] + 1
-
 
         if node.coll >= 1:
             # 1ère version ok
@@ -614,6 +613,7 @@ def transmit(env,node):
                 node.packet.sf = node.SFs.index(max(node.SFs)) + 7 # Modifié le 10/12/2020 par Cédric
             print "J'ai changé le SF du noeud n° ",node.nodeid
             print "Nouvelle SF ", node.packet.sf
+            
 
 
 
@@ -683,20 +683,21 @@ else:
             full_collision = bool(int(sys.argv[7]))
     else:
         print "************* AkramSim **************"
+        print "****NOTE: Le SF et BW sont toujours choisis de maniere d'aleatoire!"
         versionChoice = input("Vous voulez utiliser qu'elle version du simulateur :   ")
         nrNodes = input("Saisissez le nombre de neouds :   ")
         avgSendTime = input("Average send time :   ")
         simtime = input("Simulation time :   ")
         dataSize = input("Datasize Max:   ")
-        SF = input("Facteur d'étalement :   ")
-        BW = input("Bande passante  :   ")
+        #SF = input("Facteur d'étalement :   ")
+        #BW = input("Bande passante  :   ")
         full_collision = input("full collision :   ")
         print "Nodes:", nrNodes
         print "AvgSendTime (exp. distributed):",avgSendTime
         print "Simtime: ", simtime
         print "Full Collision: ", full_collision
-        print "SF", SF
-        print "BW", BW
+        #print "SF", SF
+        #print "BW", BW
         print "datasize Max", dataSize
 
     experiment = 6
@@ -849,6 +850,12 @@ for n in nodes:
         dir += "E"
     else:
         dir += "W"
+    
+    for i in range(len(n.SFs)):
+        if n.SFs[i] < -1:
+            n.SFs[i] = 0
+            
+    
     string_arr_of_sfs = [str(int) for int in n.SFs]
     str_of_sfs = ",".join(string_arr_of_sfs)
     distance = math.sqrt(abs(n.x-bsx)**2 + abs(n.y-bsy)**2 )
